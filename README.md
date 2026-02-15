@@ -1,6 +1,7 @@
 # challege_maker
-telegram-bot challege maker
+## telegram-bot challege maker
 
+```
 challenge_maker/
 ├── handlers/                
 │   ├── callbacks.py     # Обработка нажатий кнопок
@@ -15,3 +16,6 @@ challenge_maker/
 ├── loader.py            # Инициализация бота и БД
 ├── main.py              # Точка входа (запуск bot.polling)
 └── README.md            # Файл описания проекта
+```
+
+
