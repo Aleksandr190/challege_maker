@@ -13,3 +13,5 @@ load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 # Наименование базы данных
 DATABASE_NAME = os.getenv("DB_NAME")
+# Режим отладки
+DEBUG = os.getenv('DEBUG_MODE', 'False') == 'True'

@@ -6,6 +6,8 @@
 """
 
 import sqlite3
+from config import DEBUG
+from handlers.messages import RegUserCodeMsg, AddExerciseCodeMsg
 
 
 class Database:
@@ -36,20 +38,62 @@ class Database:
                 )
                 ''')
 
-    def user_exists(self, user_id):
-        """Проверка, есть ли пользователь в базе"""
+        # Создание таблицы упражнений "exercises"
+        with self.connection:
+            self.cursor.execute('''
+                CREATE TABLE IF NOT EXISTS exercises (
+                    exercise_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    exercise_name TEXT,
+                    description TEXT
+                    )
+                ''')
+
+    def user_exists(self, user_id, name):
+        """Проверка, есть ли пользователь в таблице users"""
         with self.connection:
             result = self.cursor.execute('SELECT * FROM "users" WHERE "user_id" = ?', (user_id,)).fetchall()
-            return bool(len(result))
+            if bool(len(result)):
+                return RegUserCodeMsg.ID_ALREADY_EXISTS
+            result = self.cursor.execute('SELECT * FROM "users" WHERE "entered_name" = ?', (name,)).fetchall()
+            if bool(len(result)):
+                return RegUserCodeMsg.NAME_ALREADY_EXISTS
+
+        return RegUserCodeMsg.NAME_DOESNT_EXIST
+
+    def exercise_exists(self, name):
+        """Проверка, есть ли упражнение в таблице exercises"""
+        with self.connection:
+            result = self.cursor.execute('SELECT * FROM "exercises" WHERE "exercise_name" = ?', (name,)).fetchall()
+            if bool(len(result)):
+                return AddExerciseCodeMsg.NAME_ALREADY_EXISTS
+
+        return AddExerciseCodeMsg.NAME_DOESNT_EXIST
 
     def add_user(self, user_id, username, first_name, entered_name):
         """Добавление нового пользователя"""
-        with self.connection:
-            # return self.cursor.execute('INSERT INTO "users" ("user_id") VALUES (?)', (user_id,))
-            return self.cursor.execute(
-                "INSERT INTO users (user_id, first_name, username, entered_name) VALUES (?,?,?,?)",
-                (user_id, first_name, username, entered_name))
+        try:
+            with self.connection:
+                self.cursor.execute(
+                    "INSERT INTO users (user_id, first_name, username, entered_name) VALUES (?,?,?,?)",
+                    (user_id, first_name, username, entered_name))
+                return RegUserCodeMsg.SUCCESSFUL
+        except sqlite3.Error as e:
+            if DEBUG:
+                print(f"Ошибка при добавлении: {e}")
+            return RegUserCodeMsg.DB_ERROR
 
+    def add_exercise(self, exercise_name, description):
+        """Добавление нового упражнения"""
+        try:
+            with self.connection:
+                self.cursor.execute(
+                    "INSERT INTO exercises (exercise_name, description) VALUES (?,?)",
+                    (exercise_name, description))
+                return AddExerciseCodeMsg.SUCCESSFUL
+        except sqlite3.Error as e:
+            if DEBUG:
+                print(f"Ошибка при добавлении: {e}")
+            return AddExerciseCodeMsg.DB_ERROR
     def close(self):
         """Закрытие соединения с БД"""
         self.connection.close()
