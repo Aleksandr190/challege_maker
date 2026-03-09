@@ -44,6 +44,7 @@ class Database:
                 CREATE TABLE IF NOT EXISTS exercises (
                     exercise_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     exercise_name TEXT,
+                    points INTEGER,
                     description TEXT
                     )
                 ''')
@@ -82,18 +83,34 @@ class Database:
                 print(f"Ошибка при добавлении: {e}")
             return RegUserCodeMsg.DB_ERROR
 
-    def add_exercise(self, exercise_name, description):
+    def add_exercise(self, exercise_name, points, description):
         """Добавление нового упражнения"""
         try:
             with self.connection:
                 self.cursor.execute(
-                    "INSERT INTO exercises (exercise_name, description) VALUES (?,?)",
-                    (exercise_name, description))
+                    "INSERT INTO exercises (exercise_name, points, description) VALUES (?,?,?)",
+                    (exercise_name, points, description))
                 return AddExerciseCodeMsg.SUCCESSFUL
         except sqlite3.Error as e:
             if DEBUG:
                 print(f"Ошибка при добавлении: {e}")
             return AddExerciseCodeMsg.DB_ERROR
+
+    def __get_column_as_list(self, table_name, column_name):
+        """Получить из таблицы table_name колонку column_name и вернуть значения в ввиде списка"""
+        # Выполнение запроса
+        query = f"SELECT {column_name} FROM {table_name}"
+        self.cursor.execute(query)
+
+        # Получение всех строк и преобразование в список
+        result = [row[0] for row in self.cursor.fetchall()]
+
+        return result
+
+    def get_list_exercises(self):
+        """Вернуть список упражнений"""
+        self.__get_column_as_list("exercises", "exercise_name")
+
     def close(self):
         """Закрытие соединения с БД"""
         self.connection.close()

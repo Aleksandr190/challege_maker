@@ -18,6 +18,7 @@ class BotStates(StatesGroup):
     main_menu = State()  # Состояние главного меню
     input_name = State()  # Состояние ввода имени
     input_exercise_name = State()  # Состояние ввода наименования упражнения
+    input_exercise_points = State()  # Состояние ввода наименования упражнения
     input_exercise_desc = State()  # Состояние ввода описания упражнения
 
 
@@ -66,10 +67,23 @@ def get_exercise_name(message):
     if result_code == AddExerciseCodeMsg.NAME_DOESNT_EXIST:
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
             data['name'] = entered_name
-        bot.set_state(message.from_user.id, BotStates.input_exercise_desc, message.chat.id)
-        bot.send_message(message.chat.id, exercise_messages[AddExerciseCodeMsg.INPUT_DESC])
+        bot.set_state(message.from_user.id, BotStates.input_exercise_points, message.chat.id)
+        bot.send_message(message.chat.id, exercise_messages[AddExerciseCodeMsg.INPUT_POINTS])
     else:
         bot.send_message(message.chat.id, exercise_messages[result_code])
+
+
+@bot.message_handler(state=BotStates.input_exercise_points)
+def get_exercise_points(message):
+    """ Обработчик состояния input_exercise_points """
+    if DEBUG:
+        print(f"Переключение состояния в {bot.get_state(message.from_user.id, message.chat.id)}")
+        print(f"Вызван обработчик  get_exercise_points")
+
+    with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        data['points'] = message.text
+    bot.set_state(message.from_user.id, BotStates.input_exercise_desc, message.chat.id)
+    bot.send_message(message.chat.id, exercise_messages[AddExerciseCodeMsg.INPUT_DESC])
 
 
 @bot.message_handler(state=BotStates.input_exercise_desc)
@@ -81,6 +95,6 @@ def get_exercise_desc(message):
 
     with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
         data['desc'] = message.text
-    result_code = db.add_exercise(data['name'], data['desc'])
+    result_code = db.add_exercise(data['name'], data['points'], data['desc'])
     bot.send_message(message.chat.id, exercise_messages[result_code])
     bot.delete_state(message.chat.id)

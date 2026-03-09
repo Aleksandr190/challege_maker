@@ -28,15 +28,17 @@ reg_messages = {
 class AddExerciseCodeMsg(Enum):
     NAME_ALREADY_EXISTS = 1
     INPUT_NAME = 2
-    INPUT_DESC = 3
-    NAME_DOESNT_EXIST = 4
-    DB_ERROR = 5
-    SUCCESSFUL = 6
+    INPUT_POINTS = 3
+    INPUT_DESC = 4
+    NAME_DOESNT_EXIST = 5
+    DB_ERROR = 6
+    SUCCESSFUL = 7
 
 
 exercise_messages = {
     AddExerciseCodeMsg.NAME_ALREADY_EXISTS: "Упражнение с таким названием уже существует.",
     AddExerciseCodeMsg.INPUT_NAME: "Пожалуйста, введите название упражнения:",
+    AddExerciseCodeMsg.INPUT_POINTS: "Пожалуйста, введите количество балов для этого упражнения:",
     AddExerciseCodeMsg.INPUT_DESC: "Пожалуйста, введите краткое описание упражнения:",
     AddExerciseCodeMsg.DB_ERROR: "Ошибка при взаимодействии с базой данных",
     AddExerciseCodeMsg.SUCCESSFUL: "Упражнение успешно добавленно!",
